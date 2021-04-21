@@ -1,0 +1,380 @@
+<html>
+    <head>
+        <title>test for text </title>
+
+
+    </head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<body >
+
+<script type="text/javascript">
+
+
+
+
+  $(document).ready(
+    
+    ()=>{
+
+        //helper function
+
+        var playerMovementTrack = [-11,-10,-9,-1,1,9,10,11];
+
+        function PlayerIsAround(ballPos,board){
+            
+            for (var i=0;i<playerMovementTrack.length;i++){
+                if ( board[Math.floor(ballPos+playerMovementTrack[i]/10)][ballPos+playerMovementTrack[i]%10]*turn >0 ){
+                    return true;
+                }
+            }
+            
+            
+            return false;
+            
+        }
+        //jjj
+        function showPlayerMovement(playerPos){
+            showing = [];
+            
+            for (var i=0;i<playerMovementTrack.length;i++){
+        
+               
+                
+                
+                if (Math.floor((playerPos+playerMovementTrack[i])/10)>=0 && (playerPos+playerMovementTrack[i])%10 >=0  ){
+
+                    if (board[Math.floor((playerPos+playerMovementTrack[i])/10)][(playerPos+playerMovementTrack[i])%10] == 0){
+                        possibleMovement = playerPos+playerMovementTrack[i];
+                        
+                        
+                        
+                        $("#"+possibleMovement).append("<img  class=\"piece_player\" src=\"dot.png\">");
+                            
+                        }
+                    }
+                }
+            }
+        
+
+        // piece placement and initialization 
+        var turn = 1 ; //1 or -1 
+        var ball_1_pos = 24; //6
+        var ball_2_pos = 54; //-6
+        var player_1_pos = [2,6,13,14,15]; //1~5
+        var player_2_pos = [72,76,63,64,65]; //-1~-5
+        
+        var board =[] ;
+
+        for(var i =0 ; i<8 ;i++){
+            temp = [];
+            for (var j =0 ;j<9 ; j++){
+                var cur = i*10+j;
+                if  (cur == ball_1_pos) {
+                    temp.push(6);
+                }
+                else if (cur == ball_2_pos){
+                    temp.push(-6);
+                }
+                else if (player_1_pos.indexOf(cur) != -1){
+                    temp.push(player_1_pos.indexOf(cur)+1);
+                }
+                else if (player_2_pos.indexOf(cur) != -1){
+                    temp.push(-1*player_2_pos.indexOf(cur)-1);
+                }
+                else{
+                    temp.push(0);
+                }
+            }
+            board.push(temp);
+        }
+      
+        $("#"+ball_1_pos).append("<img team=1 class=\"piece_ball\" src=\"ball_1.PNG\">")
+        $("#"+ball_2_pos).append("<img  team=-1 class=\"piece_ball\" src=\"ball_2.PNG\">")
+
+
+        for (var i =0; i<player_1_pos.length;i++){
+             $("#"+player_1_pos[i]).append("<img team=1 class=\"piece_player\" src=\"player_1.png\">")
+         
+        }
+
+        for (var i =0; i<player_2_pos.length;i++){
+             $("#"+player_2_pos[i]).append("<img team=-1 class=\"piece_player\"  src=\"player_2.png\">")
+        }
+
+
+        //piece move 
+        $(".piece_player").click(
+            ()=>{
+                var piece = $( event.target).parent();
+                var pos = parseInt(piece.attr("id"));
+                var team = $( event.target).attr("team")
+                //jjj
+                if (parseInt(team) == turn){
+                    alert(pos);
+                    showPlayerMovement(pos);
+
+                }
+                
+            }
+        )
+
+         $(".piece_ball").click(
+            ()=>{
+                var piece = $( event.target).parent();
+                var pos = parseInt(piece.attr("id"));
+
+                var team = $( event.target).attr("team")
+                alert(parseInt(team) == turn)
+                
+            }
+        )
+
+        //rule window
+        $("#rule_pop").hide();
+
+        $("#rule_book").click(()=>{
+                $("#rule_pop").show();
+        })
+
+        $("#ok_button").click(()=>{
+            $("#rule_pop").hide();
+        })
+
+    }
+
+    )
+</script>
+
+
+
+<style type="text/css">
+
+
+.tg  { margin-left: auto;
+  margin-right: auto;border-spacing:0;width:800px ; height:800px;  border-color:black;
+  border-style:solid;}
+
+td { text-align: center;  padding:none; } 
+
+.tg .tg-0lax{height:100px; width:107px; border-color:black;border-style:solid;border-width:1px;
+;padding:none;}
+
+
+
+
+tr:nth-child(even) td:nth-child(odd)  {background: #008000}
+tr:nth-child(even) td:nth-child(even)  {background:         #7cfc00}
+tr:nth-child(odd) td:nth-child(even)  {background: #008000}
+tr:nth-child(odd) td:nth-child(odd)  {background:       #7cfc00}
+
+
+.pop_window {  /*跳出全螢幕的背景*/
+    position:absolute;
+    display:none;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+    background:rgba(0, 0, 0, 0.8);
+    z-index:9999;
+}
+
+.pop_center {
+    position:absolute;
+    width:70%;
+    height:90%;
+    top:5%;
+    left:15%;
+
+    border-radius: 10px;
+    background:rgb(240,240,240);
+    box-shadow: 0px 0px 10px 0px black;
+}
+
+.piece_ball{
+    padding:none ;
+    margin:none ;
+    border:none;
+ max-width:100%;
+ max-height:100%;
+}
+
+.piece_player{
+    padding:none ;
+    margin:none ;
+    border:none;
+ max-width:100%;
+ max-height:100%;
+}
+</style>
+
+<div class='pop_window' id="rule_pop">
+        <div class='pop_center'>
+         
+         
+            <div style="height:90%;">
+                    <ul> 基本介紹
+                    <li> 禁區: 雙方陣地最後一列的中間三格(白邊部分)稱為禁區 </li>
+                    <br>
+                    <li> 球員: 雙方有五個自己的球員</li>
+                    <br>
+                    <li> 球: 雙方有一顆自己的球
+                    </ul>
+                    <ul> 規則介紹
+                        <li> 獲勝條件: 當有一個己方球員在禁區內，且<br>
+                        1.成功把球傳到他旁邊的禁區格 或是 <br>
+                        2. 禁區內球員運球到禁區內即獲勝<br> </li>
+                        <br>
+                        <li> 禁區規則: 對方禁區最多只能有一名我方(進攻)球員，我方禁區不得有我方(防守)球員 </li>
+                        <br>
+                        <li> 移動規則  每回合各方可以移動一次球員或球 :<br>
+                                1. 球員基本移動: 往周圍八格移動任一格<br>
+                                2. 球員繞球移動: 若球員貼著球，<b style="color:red">球員</b>可以繞著<b style="color:red">球</b>移動到的周圍八格任一格，<b style="color:red">但必須有旋轉路徑，例如前格跟右格分別有己方跟對方的球員，球員就不能移動到右前格</b><br>
+                                3. 球員運球: 若球員貼著球，<b style="color:red">球</b>可以繞著<b style="color:red">球員</b>移動到球的周圍八格任一格，一樣必須有旋轉路徑<br>
+                                4. 球員傳球: 若球員貼著球，可以將球直線任意格或斜線任意格移動，但終點必須是其他球員周圍的八格內，傳球一回合內可以連續進行，<b style="color:red">但球接觸過的球員不可以重複，並且傳球路徑上不可以有障礙物(己方球員、對方球員、對方球)</b>
+
+                               
+                        </li>
+                        
+                    </ul>
+
+
+                <div style="text-align:center;">
+                    <button id="ok_button">OK!</button>
+                </div>
+    
+          
+            </div>
+        </div>
+</div>
+
+
+
+
+
+<div id="main_sector" style="width:100%;height:100%" >
+<div style="width:10%; float:left;"id="text_sector">
+<button id="rule_book"> 規則</button>
+
+</div>
+
+<!-- board -->
+<div id="game_board" style="width:70%; float:left ;text-align:center">
+<table class="tg" >
+
+  
+<tbody>
+
+  <tr>
+     <td class="tg-0lax" id=0></td>
+    <td class="tg-0lax" id=1></td>
+    <td class="tg-0lax" id=2></td>
+    
+    <td id=3 style="border-left:2px solid white ;border-bottom:2px solid white"class="goal"></td>
+    <td id=4 style="border-bottom:2px solid white" class="goal"></td>
+    <td id=5 style="border-right:2px solid white ;border-bottom:2px solid white" class="goal"></td>
+    <td class="tg-0lax" id=6></td>
+    <td class="tg-0lax" id=7></td>
+    <td class="tg-0lax" id=8></td>
+   
+  </tr>
+
+
+   <tr>
+     <td class="tg-0lax" id=10></td>
+    <td class="tg-0lax" id=11></td>
+    <td class="tg-0lax" id=12></td>
+    <td class="tg-0lax" id=13></td>
+    <td id=14 class="tg-0lax"></td>
+    <td id=15 class="tg-0lax"></td>
+    <td id=16  class="tg-0lax"></td>
+    <td class="tg-0lax" id=17></td>
+    <td class="tg-0lax" id=18></td>
+   
+  </tr>
+  <tr>
+    <td class="tg-0lax" id=20></td>
+    <td class="tg-0lax" id=21></td>
+    <td class="tg-0lax" id=22></td>
+    <td class="tg-0lax" id=23></td>
+    <td class="tg-0lax" id=24></td>
+    <td class="tg-0lax" id=25></td>
+    <td class="tg-0lax" id=26></td>
+    <td class="tg-0lax" id=27></td>
+    <td class="tg-0lax" id=28></td>
+    
+  </tr>
+  <tr>
+    <td class="tg-0lax" id=30></td>
+    <td class="tg-0lax" id=31></td>
+    <td class="tg-0lax" id=32></td>
+    <td class="tg-0lax" id=33></td>
+    <td class="tg-0lax" id=34></td>
+    <td class="tg-0lax" id=35></td>
+    <td class="tg-0lax" id=36></td>
+    <td class="tg-0lax" id=37></td>
+    <td class="tg-0lax" id=38></td>
+    
+  </tr>
+  <tr>
+    <td class="tg-0lax" id=40></td>
+    <td class="tg-0lax" id=41></td>
+    <td class="tg-0lax" id=42></td>
+    <td class="tg-0lax" id=43></td>
+    <td class="tg-0lax" id=44></td>
+    <td class="tg-0lax" id=45></td>
+    <td class="tg-0lax" id=46></td>
+    <td class="tg-0lax" id=47></td>
+    <td class="tg-0lax" id=48></td>
+    
+  </tr>
+  <tr>
+    <td class="tg-0lax" id=50></td>
+    <td class="tg-0lax" id=51></td>
+    <td class="tg-0lax" id=52></td>
+    <td class="tg-0lax" id=53></td>
+    <td class="tg-0lax" id=54></td>
+    <td class="tg-0lax" id=55></td>
+    <td class="tg-0lax" id=56></td>
+    <td class="tg-0lax" id=57></td>
+    <td class="tg-0lax" id=58></td>
+    
+  </tr>
+  <tr>
+    <td class="tg-0lax" id=60></td>
+    <td class="tg-0lax" id=61></td>
+    <td class="tg-0lax" id=62></td>
+    <td class="tg-0lax" id=63></td>
+    <td class="tg-0lax" id=64></td>
+    <td class="tg-0lax" id=65></td>
+    <td class="tg-0lax" id=66></td>
+    <td class="tg-0lax" id=67></td>
+    <td class="tg-0lax" id=68></td>
+
+  </tr>
+  <tr>
+    <td class="tg-0lax" id=70></td>
+    <td class="tg-0lax" id=71></td>
+    <td class="tg-0lax" id=72></td>
+    <td id=73 style="border-left:2px solid white ;border-top:2px solid white"class="goal"></td>
+    <td id=74 style="border-top:2px solid white" class="goal"></td>
+    <td id=75 style="border-right:2px solid white ;border-top:2px solid white" class="goal"></td>
+    <td class="tg-0lax" id=76></td>
+    
+    <td class="tg-0lax" id=77></td>
+    <td class="tg-0lax" id=78></td>
+    
+  </tr>
+ 
+</tbody>
+</table>
+</div>
+
+
+</div>
+    </body>
+
+
+
+
+</html>
