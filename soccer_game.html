@@ -15,55 +15,36 @@
   $(document).ready(
     
     ()=>{
+        var Goal =[];
+        Goal[1] =[3,4,5];
+        Goal[-1] = [73,74,75];
 
-        //helper function
-
-        var playerMovementTrack = [-11,-10,-9,-1,1,9,10,11];
-
-        function PlayerIsAround(ballPos,board){
-            
-            for (var i=0;i<playerMovementTrack.length;i++){
-                if ( board[Math.floor(ballPos+playerMovementTrack[i]/10)][ballPos+playerMovementTrack[i]%10]*turn >0 ){
-                    return true;
-                }
-            }
-            
-            
-            return false;
-            
-        }
-        //jjj
-        function showPlayerMovement(playerPos){
-            showing = [];
-            
-            for (var i=0;i<playerMovementTrack.length;i++){
-        
-               
-                
-                
-                if (Math.floor((playerPos+playerMovementTrack[i])/10)>=0 && (playerPos+playerMovementTrack[i])%10 >=0  ){
-
-                    if (board[Math.floor((playerPos+playerMovementTrack[i])/10)][(playerPos+playerMovementTrack[i])%10] == 0){
-                        possibleMovement = playerPos+playerMovementTrack[i];
-                        
-                        
-                        
-                        $("#"+possibleMovement).append("<img  class=\"piece_player\" src=\"dot.png\">");
-                            
-                        }
-                    }
-                }
-            }
-        
-
+        var OnePlayerInGoal = [];
+        OnePlayerInGoal[1] = false;
+        OnePlayerInGoal[-1] = false;
         // piece placement and initialization 
         var turn = 1 ; //1 or -1 
         var ball_1_pos = 24; //6
         var ball_2_pos = 54; //-6
-        var player_1_pos = [2,6,13,14,15]; //1~5
+        var player_1_pos = [30,60,13,14,15]; //1~5
         var player_2_pos = [72,76,63,64,65]; //-1~-5
-        
+        var choose_ball = false;
         var board =[] ;
+        
+      
+        //simplfy code
+
+        function isBounded(pos){
+            if(Math.floor(pos/10)>=0 && pos%10 >=0 && Math.floor(pos/10)<=7 && pos%10 <=8 ){
+                return true;
+            }
+            return false;
+        }
+
+        function getBoard(pos){
+            return board[Math.floor(pos/10)][pos%10];
+        }
+
 
         for(var i =0 ; i<8 ;i++){
             temp = [];
@@ -87,6 +68,181 @@
             }
             board.push(temp);
         }
+
+        var choosing_number = -0.5; // spinlock的做法 //已經有-1這顆棋子了
+        var choosing_pos = -0.5 ;
+
+        //helper function
+
+        var playerMovementTrack = [-11,-10,-9,1,11,10,9,-1]; //順時針
+
+     
+
+        function PlayerIsAround(ballPos){
+            
+            for (var i=0;i<playerMovementTrack.length;i++){
+                 var checkPos = ballPos+playerMovementTrack[i];
+                 if (isBounded(checkPos)){
+
+                    if ( getBoard(checkPos)*turn >0  &&getBoard(checkPos)*turn != 6 ){
+                        return checkPos;
+                    }
+                }
+            }
+            
+            
+              return -0.5;
+            
+        }
+
+        function BallIsAround(playerPos){
+            
+            for (var i=0;i<playerMovementTrack.length;i++){
+                var checkPos = playerPos+playerMovementTrack[i];
+                if (isBounded(checkPos)){
+
+                if ( getBoard(checkPos)== turn*6 ){
+                    return checkPos;
+                }
+                 }
+            }
+            
+            
+            return -0.5;
+            
+        }
+        
+        function showPlayerMovement_direct(playerPos){
+            
+            
+            for (var i=0;i<playerMovementTrack.length;i++){
+        
+               
+                var checkPos = playerPos+playerMovementTrack[i];
+                
+                if (isBounded(checkPos)){
+                    
+                    if (getBoard(checkPos)== 0 && Goal[turn].indexOf(checkPos) == -1 ){
+                        if(Goal[turn*-1].includes(checkPos)==false){ //目標不是對方球門，可以移動
+                            $("#"+checkPos).append("<img  class=\"dot\" src=\"dot.png\">");
+                        }
+
+                        else{
+                            if(OnePlayerInGoal[turn]==false || Goal[turn*-1].includes(playerPos) == true){ // 目標是對方球門，但自己在門內，或門內沒人，可以移動
+                                $("#"+checkPos).append("<img  class=\"dot\" src=\"dot.png\">");
+                            }
+                           
+                        }
+                
+                        }
+                    }
+                }
+            }
+     
+        function showPlayerMovement_rotate(playerPos,ballPos){
+            var relativePos = playerPos-ballPos; 
+            var curIdx =  (playerMovementTrack.indexOf(relativePos)+1)%8;
+             
+            for (var i=0;i<playerMovementTrack.length;i++){
+                //照順序就是順時針了(X)，但是是人沿球轉才對!所以還要調整
+                
+               // console.log(i);
+               // console.log((curIdx+i)%8);
+                var checkPos = ballPos+playerMovementTrack[(curIdx+i)%8];
+                if (isBounded(checkPos) ){
+
+                    if (getBoard(checkPos) == 0 && Goal[turn].indexOf(checkPos) == -1　){
+                       
+                        
+                       
+                        
+                         if(!$("#"+checkPos).children().length){
+                            $("#"+checkPos).append("<img  class=\"dot\" src=\"dot.png\">");
+                        }
+                            
+                        }
+                    else{
+                        break;
+                    }
+                     }
+                else{
+                        break;
+                }
+                }
+
+            if(curIdx-2<0){
+                curIdx = curIdx+6;
+            }
+            else{
+                curIdx = curIdx-2;
+            }
+            
+            for (var i=0;i<playerMovementTrack.length;i++){
+                //反順序就是逆時針!
+                
+                var checkPos = ballPos+playerMovementTrack[(curIdx)];
+
+                //console.log(curIdx)
+                if (isBounded(checkPos)){
+
+                    if (getBoard(checkPos) == 0 && Goal[turn].indexOf(checkPos) == -1　){
+                                           
+                         if(!$("#"+checkPos).children().length){
+                            $("#"+checkPos).append("<img  class=\"dot\" src=\"dot.png\">");
+                        }
+                            
+                        }
+                    else{
+                        break;
+                    }
+                }
+                else{
+                        break;
+                }
+                curIdx-=1;
+                if(curIdx<0){
+                    curIdx = curIdx+8;
+                }
+                
+                }
+            }
+
+        function showBallMovement_passing(pos){
+            var stack = [pos];
+            var now_stack = 0
+            while(stack.length > now_stack ){
+                main = stack[now_stack];
+                console.log(main);
+                for (var i=0;i<playerMovementTrack.length;i++){
+                    direct = playerMovementTrack[i];
+                    checkPos = main+direct;
+                    while( isBounded(checkPos) && getBoard(checkPos) == 0 ){
+                        
+                        if(PlayerIsAround(checkPos) != -0.5 && Goal[turn].indexOf(checkPos) ==-1){
+                            if(!$("#"+checkPos).children().length){
+                                $("#"+checkPos).append("<img  class=\"dot passing\" src=\"dot2.png\">");
+                            }
+                            /* 連傳系統 
+                            if(!stack.includes(checkPos)){
+                                stack.push(checkPos);
+                                console.log(stack);
+                            }
+                            */
+                        }
+                   
+                        checkPos = checkPos+playerMovementTrack[i];
+                    }                    
+                    
+                }
+
+
+
+
+                now_stack+=1; //pop first
+            }
+        }
+
+        
       
         $("#"+ball_1_pos).append("<img team=1 class=\"piece_ball\" src=\"ball_1.PNG\">")
         $("#"+ball_2_pos).append("<img  team=-1 class=\"piece_ball\" src=\"ball_2.PNG\">")
@@ -103,32 +259,144 @@
 
 
         //piece move 
-        $(".piece_player").click(
-            ()=>{
+        $(document).on('click', '.piece_player', function(){ // ******  dynamic element *****
+               // alert(choosing_number);
+                if (choosing_number != -0.5){
+                    choosing_number = -0.5;
+                    choosing_pos=-0.5;
+                     $(".dot").remove();
+                }
+                
+                choose_ball=false;
                 var piece = $( event.target).parent();
                 var pos = parseInt(piece.attr("id"));
-                var team = $( event.target).attr("team")
-                //jjj
-                if (parseInt(team) == turn){
-                    alert(pos);
-                    showPlayerMovement(pos);
+                
+                choosing_pos = pos;
+                choosing_number = getBoard(pos);
 
+                var team = $( event.target).attr("team")
+                    //jjj
+                if (parseInt(team) == turn ){
+                        //alert(pos);
+                        showPlayerMovement_direct(pos);
+                        ball_pos = BallIsAround(pos);
+                        
+                        if(ball_pos!=-0.5){
+                         
+                            showPlayerMovement_rotate(pos,ball_pos);
+                        }
+                }
+                else{
+                   addMessage("Not your turn")       
+                }
+                 
+                
+        })
+        
+
+        $(document).on('click', '.piece_ball', function(){
+
+                if (choosing_number != -0.5){
+                    choosing_number = -0.5;
+                    choosing_pos=-0.5;
+                     $(".dot").remove();
+                }
+                
+                choose_ball=true;
+                var piece = $( event.target).parent();
+                var pos = parseInt(piece.attr("id"));
+                
+                choosing_pos = pos;
+                choosing_number = getBoard(pos);
+
+                var team = $( event.target).attr("team")
+                    
+                if (parseInt(team) == turn ){
+                        //alert(pos);
+                        
+                        
+                        
+                        //for all neiborhood player rotation
+                        for (var i=0;i<playerMovementTrack.length;i++){
+                            var checkPos = pos+playerMovementTrack[i];
+                             if (isBounded(checkPos)){
+
+                                if ( getBoard(checkPos)*turn >0 &&  getBoard(checkPos)*turn!=6 ){
+                                    showPlayerMovement_rotate(pos,checkPos);
+                                }
+                            }
+                        }
+
+                        //for pass ball : using DFS
+            
+                        if(PlayerIsAround(pos)!=-0.5){
+                            showBallMovement_passing(pos);
+                        }
+                        else{
+                            addMessage("No player around")
+                        }
+                }
+                else{
+
+                    addMessage("Not your turn")
+                        
                 }
                 
             }
         )
+        $(document).on('click', '.dot', function(){ // ******  dynamic element *****
+             // for piece movement
+             if(choosing_number != -0.5){
+                    
+                    
+                    var piece = $( event.target).parent();
+                    var pos = parseInt(piece.attr("id"));
+                    //new
+                    if(Goal[turn*-1].includes(choosing_pos) == true &&Goal[turn*-1].includes(pos) == false ){  //原本在門內，現在出來了 (pos是移動目的地)
+                        OnePlayerInGoal[turn] = false;
+                    }
+                    if(Goal[turn*-1].includes(pos) == true){ //跑進門內
+                        OnePlayerInGoal[turn] = true;
+                    }
 
-         $(".piece_ball").click(
-            ()=>{
-                var piece = $( event.target).parent();
-                var pos = parseInt(piece.attr("id"));
+                    board[Math.floor(pos/10)][pos%10] = choosing_number;
+                    board[Math.floor(choosing_pos/10)][choosing_pos%10] = 0; 
+                    $("#"+choosing_pos).empty();
+                    if(choose_ball==false){
+                        if(turn == 1){
+                            $("#"+pos).append("<img team=1 class=\"piece_player\" src=\"player_1.png\">");
+                          }
+                        if(turn == -1){
+                            $("#"+pos).append("<img team=-1 class=\"piece_player\" src=\"player_2.png\">");
+                          }
+                    }
+                    else{
+                        if(turn == 1){
+                            $("#"+pos).append("<img team=1 class=\"piece_ball\" src=\"ball_1.png\">");
+                          }
+                        if(turn == -1){
+                            $("#"+pos).append("<img team=-1 class=\"piece_ball\" src=\"ball_2.png\">");
+                          }
+                          choose_ball=false;
 
-                var team = $( event.target).attr("team")
-                alert(parseInt(team) == turn)
-                
-            }
-        )
+                          //chcek wheather win or not
+                          if(Goal[turn*-1].includes(pos)==true && OnePlayerInGoal[turn] == true ){
+                                $("#main_sector").hide();
+                                if(turn == 1){
+                                    alert("team green win");
+                                }
+                                else{
+                                    alert("team red win");
+                                }
+                            }
 
+                    }
+
+                    turn = turn*-1 ; //flip turn 
+                    $(".dot").remove();
+                }
+        });
+       
         //rule window
         $("#rule_pop").hide();
 
@@ -139,10 +407,45 @@
         $("#ok_button").click(()=>{
             $("#rule_pop").hide();
         })
+        var mes_show = true;
+        $("#mes_btn").click(()=>{ 
+              
+            if(mes_show){
+                $('#message').hide();
+                mes_show = false;
+            }
+            else{
+                $('#message').show();       
+                 mes_show = true;
+            }
+        })
+
+
+
+
 
     }
 
+
+
     )
+    //message window
+        var num_message = 0; 
+        var MAX_MESSAGE = 19; 
+        function addMessage(Text){
+            if(num_message>= MAX_MESSAGE){
+                $("#message div:nth-child(1)").remove();
+            }
+
+            if(num_message %2 ==0){
+                $("#message").append("<div class=\"message_div\" style=\"background-color:#F0F8FF;\">"+Text+"</div>");
+            } 
+            else{
+                $("#message").append("<div class=\"message_div\" style=\"background-color:#DCDCDC\">"+Text+"</div>");
+            }
+            num_message+=1;
+        }
+
 </script>
 
 
@@ -206,6 +509,30 @@ tr:nth-child(odd) td:nth-child(odd)  {background:       #7cfc00}
  max-width:100%;
  max-height:100%;
 }
+
+.dot{
+    padding:none ;
+    margin:none ;
+    border:none;
+ max-width:100%;
+ max-height:100%;
+}
+
+.message_div{
+    height:5%;
+    font-size : 200%;
+}
+
+#message {
+    background-color: #DCDCDC;
+    height:100%;
+    float: left;
+    width: 20%;
+
+    /*overflow:scroll;*/
+} 
+
+
 </style>
 
 <div class='pop_window' id="rule_pop">
@@ -255,7 +582,7 @@ tr:nth-child(odd) td:nth-child(odd)  {background:       #7cfc00}
 <div id="main_sector" style="width:100%;height:100%" >
 <div style="width:10%; float:left;"id="text_sector">
 <button id="rule_book"> 規則</button>
-
+<button id="mes_btn"> 顯示/關閉訊息</button>
 </div>
 
 <!-- board -->
@@ -370,6 +697,9 @@ tr:nth-child(odd) td:nth-child(odd)  {background:       #7cfc00}
 </table>
 </div>
 
+<div id="message">message
+        
+</div>
 
 </div>
     </body>
